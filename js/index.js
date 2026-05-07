@@ -39,6 +39,31 @@ if (introImg) {
     const altImg = new Image();
     altImg.src = 'img/Mii.jpg';
     
+    // Freeze the initial dimensions so the layout doesn't shift when changing images
+    const freezeSize = () => {
+        if (introImg.clientHeight > 0) {
+            introImg.style.width = introImg.clientWidth + 'px';
+            introImg.style.height = introImg.clientHeight + 'px';
+            introImg.style.objectFit = 'contain';
+        }
+    };
+
+    if (introImg.complete) {
+        freezeSize();
+    } else {
+        introImg.addEventListener('load', freezeSize, { once: true });
+    }
+
+    // Handle window resize gracefully
+    window.addEventListener('resize', () => {
+        if (introImg.getAttribute('src').includes('face.jpg')) {
+            introImg.style.width = '';
+            introImg.style.height = '';
+            introImg.style.objectFit = '';
+            setTimeout(freezeSize, 100);
+        }
+    });
+    
     introImg.addEventListener('click', () => {
         if (introImg.getAttribute('src').includes('face.jpg')) {
             introImg.setAttribute('src', 'img/Mii.jpg');
