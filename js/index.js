@@ -28,3 +28,22 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+
+// Toggle introduction image on click
+const introImg = document.querySelector('.intro__img');
+if (introImg) {
+    introImg.style.cursor = 'pointer'; // Make it look clickable
+    introImg.title = 'Click me to change picture!'; // Add tooltip
+    
+    // Preload the alternate image to prevent flickering
+    const altImg = new Image();
+    altImg.src = 'img/Mii.jpg';
+    
+    introImg.addEventListener('click', () => {
+        if (introImg.getAttribute('src').includes('face.jpg')) {
+            introImg.setAttribute('src', 'img/Mii.jpg');
+        } else {
+            introImg.setAttribute('src', 'img/face.jpg');
+        }
+    });
+}
