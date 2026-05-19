@@ -29,17 +29,14 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-// Toggle introduction image on click
 const introImg = document.querySelector('.intro__img');
 if (introImg) {
-    introImg.style.cursor = 'pointer'; // Make it look clickable
-    introImg.title = 'Click me to change picture!'; // Add tooltip
+    introImg.style.cursor = 'pointer'; 
+    introImg.title = 'Click me to change picture!'; 
     
-    // Preload the alternate image to prevent flickering
     const altImg = new Image();
     altImg.src = 'img/Mii.jpg';
     
-    // Freeze the initial dimensions so the layout doesn't shift when changing images
     const freezeSize = () => {
         if (introImg.clientHeight > 0) {
             introImg.style.width = introImg.clientWidth + 'px';
@@ -54,7 +51,6 @@ if (introImg) {
         introImg.addEventListener('load', freezeSize, { once: true });
     }
 
-    // Handle window resize gracefully
     window.addEventListener('resize', () => {
         if (introImg.getAttribute('src').includes('face.jpg')) {
             introImg.style.width = '';
