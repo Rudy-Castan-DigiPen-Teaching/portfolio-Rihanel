@@ -11,7 +11,7 @@
     <!-- Help auto scale for desktop & mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>STUDENT TODO Website</title>
+    <title>Procedural Meshes | Sangyun Lee</title>
 
     <!-- Normalize the difference across browsers  https://necolas.github.io/normalize.css/ -->
     <link rel="stylesheet" href="../external/normalize.css">
@@ -61,27 +61,60 @@
 
     <!-- Introduction -->
     <section class="intro">
-        <!-- TODO put the name of the assignment here -->
         <h1 class="section__title section__title--intro">
             Project <strong>Procedural Geometric Modeling</strong>
         </h1>
         <p class="section__subtitle section__subtitle--intro">3D Graphics</p>
-        <img src="../img/portfolio_thumbnails/02_meshes.jpg" alt="a picture of this portfolio item" class="intro__img">
+        <img src="../img/portfolio_thumbnails/02_meshes.png" alt="a picture of this portfolio item" class="intro__img">
     </section>
 
     <div class="portfolio-item-individual">
         <h2>Project Overview</h2>
-        <p>Provide a brief description of the project, its purpose, and what you aimed to achieve.</p>
+        <p>
+            Procedural Geometric Modeling is the second assignment in CS250 Computer Graphics II
+            at DigiPen Institute of Technology. The goal was to implement run-time procedural mesh
+            generation for six geometric primitives — Plane, Cube, Sphere, Torus, Cylinder, and Cone —
+            using parametric equations and a shared stacks/slices tessellation model. Each mesh is
+            normalized to unit dimensions ([-0.5, 0.5]) and supports adjustable LOD via ImGui sliders.
+        </p>
 
         <h2>Tasks Completed</h2>
         <ul>
-            <li>Describe the tasks you completed for this project.</li>
-            <li>Be specific about your contributions and the technologies used.</li>
+            <li>Implemented <strong>build_index_buffer()</strong> — generates a CCW triangle index list
+                for any stacks×slices grid; reused by all six shapes.</li>
+            <li>Implemented <strong>create_plane_vertices()</strong> — XY-plane grid with position
+                <code>(col−0.5, row−0.5, 0)</code>, normal <code>(0,0,1)</code>, UV <code>(col, row)</code>.</li>
+            <li>Implemented <strong>convert_to_lines_pattern()</strong> — converts triangle index
+                buffer to wireframe line pairs, detecting quad patterns (6 indices → 4 edges) and
+                fallback triangles (3 indices → 3 edges).</li>
+            <li>Implemented <strong>create_sphere()</strong> — spherical coordinates
+                (α∈[0,2π], β∈[−π/2, π/2]); normal computed as <code>position / radius</code>.</li>
+            <li>Implemented <strong>create_torus()</strong> — parametric torus with major radius R=0.35
+                and minor radius r=0.15; normal derived from tube-center vector <code>(pos − center) / r</code>.
+                Supports partial-arc rendering via <code>start_angle</code> / <code>end_angle</code>.</li>
+            <li>Implemented <strong>add_cap()</strong> + <strong>create_cylinder()</strong> /
+                <strong>create_cone()</strong> — cylindrical side mesh built with stacks/slices,
+                then top and bottom circular caps appended as triangle fans.
+                Cone lateral normal uses tangent-slope formula <code>normalize(sinα, 0.5, cosα)</code>.</li>
+            <li>Extracted shared <code>constexpr float R = 0.5f</code> to anonymous namespace;
+                all functions reuse the same <code>build_index_buffer()</code> and UV convention.</li>
         </ul>
 
         <h2>Reflection</h2>
-        <p>Reflect on the project, discussing any challenges faced, solutions implemented, and what you learned from the
-            experience.</p>
+        <p>
+            The most non-obvious part was <strong>add_cap()</strong>'s winding order. The top cap
+            (center_y &gt; 0) must wind CCW when viewed from above, while the bottom cap must wind
+            CCW when viewed from below — flipping which of the two adjacent ring vertices comes first
+            in each triangle. Getting this wrong produces caps that cull away entirely, leaving
+            open-ended cylinders with no visible error message.
+        </p>
+        <p>
+            The <strong>convert_to_lines_pattern()</strong> function was also subtle: it first tries
+            to consume pairs of triangles (6 indices forming a quad), then falls back to individual
+            triangles. Mixing these two patterns happens at the seam between the main stacks/slices
+            body and the cap fan — recognizing that the cap indices don't satisfy the quad pattern
+            condition was key to getting clean wireframe rendering for capped shapes.
+        </p>
     </div>
 
     <div class="portfolio-item-individual">
@@ -91,7 +124,7 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <a href="mailto:my.email@digipen.edu" class="footer__link">my.email@digipen.edu</a>
+        <a href="mailto:sangyun.lee@digipen.edu" class="footer__link">sangyun.lee@digipen.edu</a>
         <ul class="social-list">
             <li class="social-list__item">
                 <a class="social-list__link" href="https://linkedin.com/in/mylinkedinid">
