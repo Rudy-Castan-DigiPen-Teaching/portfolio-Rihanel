@@ -80,40 +80,48 @@
 
         <h2>Tasks Completed</h2>
         <ul>
-            <li>Implemented <strong>build_index_buffer()</strong> — generates a CCW triangle index list
-                for any stacks×slices grid; reused by all six shapes.</li>
-            <li>Implemented <strong>create_plane_vertices()</strong> — XY-plane grid with position
-                <code>(col−0.5, row−0.5, 0)</code>, normal <code>(0,0,1)</code>, UV <code>(col, row)</code>.</li>
-            <li>Implemented <strong>convert_to_lines_pattern()</strong> — converts triangle index
-                buffer to wireframe line pairs, detecting quad patterns (6 indices → 4 edges) and
-                fallback triangles (3 indices → 3 edges).</li>
-            <li>Implemented <strong>create_sphere()</strong> — spherical coordinates
-                (α∈[0,2π], β∈[−π/2, π/2]); normal computed as <code>position / radius</code>.</li>
-            <li>Implemented <strong>create_torus()</strong> — parametric torus with major radius R=0.35
-                and minor radius r=0.15; normal derived from tube-center vector <code>(pos − center) / r</code>.
-                Supports partial-arc rendering via <code>start_angle</code> / <code>end_angle</code>.</li>
-            <li>Implemented <strong>add_cap()</strong> + <strong>create_cylinder()</strong> /
-                <strong>create_cone()</strong> — cylindrical side mesh built with stacks/slices,
-                then top and bottom circular caps appended as triangle fans.
-                Cone lateral normal uses tangent-slope formula <code>normalize(sinα, 0.5, cosα)</code>.</li>
-            <li>Extracted shared <code>constexpr float R = 0.5f</code> to anonymous namespace;
-                all functions reuse the same <code>build_index_buffer()</code> and UV convention.</li>
+            <li><strong>Procedural 3D Geometry Algorithms</strong> — Implemented runtime generation of
+                six geometric primitives — Plane, Cube, Sphere, Torus, Cylinder, and Cone — using
+                parametric equations and a shared stacks/slices tessellation model.</li>
+            <li><strong>Multiple Rendering Modes</strong> — Built triangle fill, wireframe, and normal
+                visualization as three independently switchable rendering modes.</li>
+            <li><strong>Capped Geometry</strong> — Constructed circular end caps for Cylinder and Cone
+                as triangle fans, handling correct CCW winding order for both the top and bottom caps.</li>
+            <li><strong>Runtime LOD Control</strong> — Exposed Stacks and Slices as interactive sliders
+                that rebuild the mesh in real time, allowing continuous adjustment of mesh density.</li>
+            <li><strong>Partial Arc Rendering</strong> — Extended the Torus with start and end angle
+                parameters to support rendering of partial arcs.</li>
         </ul>
 
         <h2>Reflection</h2>
+        <h3>Challenges</h3>
         <p>
-            The most non-obvious part was <strong>add_cap()</strong>'s winding order. The top cap
-            (center_y &gt; 0) must wind CCW when viewed from above, while the bottom cap must wind
-            CCW when viewed from below — flipping which of the two adjacent ring vertices comes first
-            in each triangle. Getting this wrong produces caps that cull away entirely, leaving
-            open-ended cylinders with no visible error message.
+            The top and bottom caps of Cylinder and Cone require opposite CCW winding directions
+            depending on which side the camera views them from — getting this wrong causes the caps
+            to be culled entirely with no visible error.
         </p>
         <p>
-            The <strong>convert_to_lines_pattern()</strong> function was also subtle: it first tries
-            to consume pairs of triangles (6 indices forming a quad), then falls back to individual
-            triangles. Mixing these two patterns happens at the seam between the main stacks/slices
-            body and the cap fan — recognizing that the cap indices don't satisfy the quad pattern
-            condition was key to getting clean wireframe rendering for capped shapes.
+            The wireframe conversion needed to handle two different index patterns in the same buffer:
+            quad pairs from the main body and triangle fans from the caps, which cannot be processed
+            with a single uniform loop.
+        </p>
+        <h3>Solutions</h3>
+        <p>
+            Used an <code>isTop</code> flag to swap the order of the two ring vertices in each
+            triangle, flipping the winding direction for the bottom cap.
+        </p>
+        <p>
+            Processed the buffer in two passes — first consuming groups of six indices as quads,
+            then falling back to groups of three for the remaining cap fan triangles.
+        </p>
+        <h3>Learnings</h3>
+        <p>
+            Winding order bugs are silent: incorrect caps disappear rather than rendering incorrectly,
+            so visual testing alone is not enough to catch them.
+        </p>
+        <p>
+            Designing index buffers with a consistent structure from the start makes wireframe
+            conversion and other post-processing significantly simpler.
         </p>
     </div>
 
