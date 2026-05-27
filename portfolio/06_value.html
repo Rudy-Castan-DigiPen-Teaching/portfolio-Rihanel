@@ -10,7 +10,7 @@
 
     <!-- Help auto scale for desktop & mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STUDENT TODO Website</title>
+    <title>Value Noise | Sangyun Lee</title>
 
     <!-- Normalize the difference across browsers  https://necolas.github.io/normalize.css/ -->
     <link rel="stylesheet" href="../external/normalize.css">
@@ -69,35 +69,70 @@
 
     <div class="portfolio-item-individual">
         <h2>Project Overview</h2>
-        <p>Provide a brief description of the project, its purpose, and what you aimed to achieve.</p>
+        <p>
+            This project implements Value Noise, a classical procedural texture generation technique.
+            Random scalar values are assigned to integer lattice points, then smoothly interpolated
+            across the continuous domain to produce a coherent, organic-looking noise field.
+            The goal was to build a fully parameterized noise system — controllable period size,
+            texture resolution, and smoothing method — and render the result as a live GPU texture
+            with multi-threaded generation to keep the application responsive even at large resolutions.
+        </p>
 
         <h2>Tasks Completed</h2>
         <ul>
-            <li>Describe the tasks you completed for this project.</li>
-            <li>Be specific about your contributions and the technologies used.</li>
+            <li>Implemented the core Value Noise algorithm, covering noise coordinate decomposition, smoothing/fade curves (linear, cosine, smoothstep, and quintic), permutation-based lattice hashing for random value lookup, and bilinear and trilinear interpolation.</li>
+            <li>Designed a generic, reusable noise template that supports 1D, 2D, and 3D evaluation with configurable period size and smoothing method, ensuring seamless tiling via power-of-two periods and bitwise masking.</li>
+            <li>Built an OpenGL texture pipeline that allocates GPU texture storage once and streams updated pixel data each time the noise is regenerated, avoiding unnecessary reallocations.</li>
+            <li>Integrated a multi-threaded job system that partitions texture row computation across all available CPU cores, dramatically reducing generation time for large resolutions.</li>
+            <li>Created an interactive demo with real-time ImGui controls for period size, texture resolution, smoothing method, and on-demand noise regeneration using an asynchronous state-machine update loop.</li>
         </ul>
 
         <h2>Reflection</h2>
-        <p>Reflect on the project, discussing any challenges faced, solutions implemented, and what you learned from the
-            experience.</p>
+        <h3>Challenges</h3>
+        <p>
+            The most significant challenge was a severe performance regression where generating an 8192×8192 texture caused a
+            30-second application freeze that made the demo unusable. A separate but related issue was guaranteeing
+            that the noise pattern tiles seamlessly across arbitrary texture resolutions, and coordinating asynchronous
+            multi-threaded computation with the single-threaded OpenGL render loop without stalling the UI.
+        </p>
+        <h3>Solutions</h3>
+        <p>
+            The freeze was traced to a missing preprocessor macro that silently caused the entire multi-threaded code
+            path to be excluded at compile time, falling back to a single-threaded implementation that processed
+            67 million pixels sequentially. Fixing the header include that defines the macro restored full parallel
+            execution and reduced generation time to under a second. Seamless tiling was achieved by constructing the
+            permutation hash table with a doubled structure so that index arithmetic wraps correctly within the period,
+            combined with bitwise masking that exploits the power-of-two period size. UI responsiveness was preserved
+            by separating job submission from job completion: the demo submits all work asynchronously each frame and
+            polls a completion flag, advancing through a state machine (Setup → Working → Upload → Done) without blocking.
+        </p>
+        <h3>Learnings</h3>
+        <p>
+            Preprocessor macro visibility is strictly file-scoped — including the wrong header silently disables entire
+            compilation branches with no compiler warning, making this class of bug extremely difficult to notice
+            without profiling. Value noise tiling requires the hash function itself to be periodic, not just the
+            interpolation weights; both must respect the same period boundary. Finally, multi-threaded workloads
+            integrated into a frame-based render loop must decouple job submission from job completion to avoid
+            stalling the main thread.
+        </p>
     </div>
 
     <div class="portfolio-item-individual">
         <h2>Demo</h2>
-        <iframe id="demo" src="../webgl/D06ValueNoise/graphics_fun.html?start=value" tabindex="-1"></iframe>
+        <iframe id="demo" src="../demos/graphics_fun.html?start=value" tabindex="-1"></iframe>
     </div>
 
     <!-- Footer -->
     <footer class="footer">
-        <a href="mailto:my.email@digipen.edu" class="footer__link">my.email@digipen.edu</a>
+        <a href="mailto:sangyun.lee@digipen.edu" class="footer__link">sangyun.lee@digipen.edu</a>
         <ul class="social-list">
             <li class="social-list__item">
-                <a class="social-list__link" href="https://linkedin.com/in/mylinkedinid">
+                <a class="social-list__link" href="https://www.linkedin.com/in/sangyun-lee-720294406/">
                     <i class="fab fa-linkedin"></i>
                 </a>
             </li>
             <li class="social-list__item">
-                <a class="social-list__link" href="https://github.com/mygithubid">
+                <a class="social-list__link" href="https://github.com/Rihanel">
                     <i class="fab fa-github"></i>
                 </a>
             </li>
