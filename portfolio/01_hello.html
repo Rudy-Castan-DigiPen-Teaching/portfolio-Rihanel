@@ -73,39 +73,48 @@
             The goal was to build the foundational OpenGL rendering pipeline from scratch and display an animated,
             textured quad on screen. This project covers the full lifecycle of GPU resource management —
             from allocating vertex and index buffers on the GPU, to uploading texture data, to configuring
-            vertex attribute layouts and drawing primitives.
+            vertex attribute layouts and drawing indexed primitives.
         </p>
 
         <h2>Tasks Completed</h2>
         <ul>
-            <li>Implemented <strong>VertexBuffer</strong> — allocates a GPU buffer with <code>glGenBuffers</code> and <code>glBufferData</code>, supports dynamic data upload via <code>glBufferSubData</code>.</li>
-            <li>Implemented <strong>IndexBuffer</strong> — stores index data on the GPU using <code>GL_ELEMENT_ARRAY_BUFFER</code>, supporting <code>unsigned int</code>, <code>unsigned short</code>, and <code>unsigned char</code> index types.</li>
-            <li>Implemented <strong>Texture</strong> — loads RGBA image data onto the GPU via <code>glTexImage2D</code>, with configurable filtering and wrapping modes.</li>
-            <li>Implemented <strong>VertexArray</strong> — configures vertex attribute pointers (<code>glVertexAttribPointer</code> / <code>glVertexAttribIPointer</code>) and manages the binding relationship between VAO and IBO.</li>
-            <li>Added <strong>vertex animation</strong> in GLSL — applies a time-based sine wave to each vertex's Y position, creating a wobble effect.</li>
-            <li>Added <strong>fragment animation</strong> in GLSL — cycles the blend ratio between vertex color and texture color over time using <code>sin(uTime)</code>.</li>
-            <li>All OpenGL calls routed through the <code>GL::</code> wrapper namespace for automatic error checking.</li>
-            <li>Compatible with OpenGL 3.3, OpenGL ES 3.0, and WebGL 2 (GLSL ES 3.0 shaders).</li>
+            <li>Implemented the vertex buffer system to allocate GPU memory for geometry data and support dynamic partial data updates without reallocating the entire buffer.</li>
+            <li>Implemented the index buffer system to store triangle topology on the GPU, supporting multiple index precision widths to balance memory usage against maximum mesh size.</li>
+            <li>Implemented the texture loading system to decode image files and upload pixel data to the GPU with configurable filtering and wrapping behavior per texture coordinate axis.</li>
+            <li>Implemented the vertex array object system to describe the memory layout of each vertex attribute and bind index data to the draw call, encapsulating the full draw state in a single object.</li>
+            <li>Authored vertex and fragment shaders with time-based animation — vertex positions are displaced by a periodic wave and the fragment color blends smoothly between vertex color and texture color over time.</li>
         </ul>
 
         <h2>Reflection</h2>
+        <h3>Challenges</h3>
         <p>
-            The trickiest part was <strong>VertexArray::SetIndexBuffer</strong>. In OpenGL, the
-            <code>GL_ELEMENT_ARRAY_BUFFER</code> binding is stored as part of VAO state — so unbinding the
-            IBO while the VAO is still bound would silently remove the association. Getting the unbind order
-            wrong produces no error but results in nothing being drawn. Understanding this subtle VAO/IBO
-            ownership model was the key insight of this assignment.
+            The most subtle difficulty was correctly implementing the relationship between the vertex array
+            object and the index buffer. In OpenGL, the index buffer binding is stored as part of the vertex
+            array object's state — so releasing the index buffer while the vertex array object is still bound
+            silently severs the association. This produces no error message but causes nothing to be drawn,
+            making the root cause extremely difficult to diagnose without knowing the ownership model in advance.
         </p>
+        <h3>Solutions</h3>
         <p>
-            I also experimented with the hot-reload system, editing shader code and swapping the texture
-            while the program was running — seeing changes applied instantly without restarting was a
-            satisfying way to iterate on the animation parameters.
+            The fix requires strict attention to unbind order: the vertex array object must be unbound before
+            the index buffer is released, so the association is preserved in the vertex array object's state.
+            Making this order explicit and consistent across the implementation prevents the silent failure
+            entirely. Routing all OpenGL calls through a wrapper that logs errors after every call also helped
+            surface problems during development that would otherwise have produced no output.
+        </p>
+        <h3>Learnings</h3>
+        <p>
+            OpenGL's binding model means that object state is recorded implicitly at the time of binding, not
+            at the time of draw. Resources that appear independent can have hidden ownership relationships
+            that only manifest as missing output rather than a reported error. Recognizing these implicit
+            state dependencies — and encoding the correct operation order into the API design — is more
+            reliable than relying on runtime diagnostics alone.
         </p>
     </div>
 
     <div class="portfolio-item-individual">
         <h2>Demo</h2>
-        <iframe id="demo" src="../demos/graphics_fun.html?start=hello"></iframe>
+        <iframe id="demo" src="../demos/graphics_fun.html?start=hello" tabindex="-1"></iframe>
     </div>
 
 

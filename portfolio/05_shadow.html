@@ -10,7 +10,7 @@
 
     <!-- Help auto scale for desktop & mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STUDENT TODO Website</title>
+    <title>Shadow Mapping | Sangyun Lee</title>
 
     <!-- Normalize the difference across browsers  https://necolas.github.io/normalize.css/ -->
     <link rel="stylesheet" href="../external/normalize.css">
@@ -64,22 +64,61 @@
             Project <strong>Shadow Mapping</strong>
         </h1>
         <p class="section__subtitle section__subtitle--intro">3D Graphics</p>
-        <img src="../img/portfolio_thumbnails/05_shadow.jpg" alt="a picture of this portfolio item" class="intro__img">
+        <img src="../img/portfolio_thumbnails/05_shadow.png" alt="a picture of this portfolio item" class="intro__img">
     </section>
 
     <div class="portfolio-item-individual">
         <h2>Project Overview</h2>
-        <p>Provide a brief description of the project, its purpose, and what you aimed to achieve.</p>
+        <p>
+            This project implements shadow mapping, a two-pass rendering technique that produces dynamic,
+            perspective-correct shadows cast by a point light source modeled as a perspective camera.
+            The work extends an existing OpenGL framework with framebuffer objects, depth textures,
+            and a complete shadow rendering pipeline — including a shadow bias matrix, exponential fog,
+            gamma correction, and real-time ImGui controls for tuning shadow quality parameters such as
+            polygon offset, depth bit size, and shadow map resolution.
+        </p>
 
         <h2>Tasks Completed</h2>
         <ul>
-            <li>Describe the tasks you completed for this project.</li>
-            <li>Be specific about your contributions and the technologies used.</li>
+            <li>Implemented a perspective camera abstraction with analytically derived view and inverse-view matrices using only dot products, supporting full 6-DOF spectator movement and rotation for both the scene camera and the light source.</li>
+            <li>Extended the texture system to support hardware depth textures with configurable bit depth, including shadow comparison mode and edge clamping required for correct out-of-bounds shadow boundary behavior.</li>
+            <li>Implemented a framebuffer object class that manages the full lifecycle of off-screen render targets, supporting combined depth and color attachments with framebuffer completeness validation.</li>
+            <li>Implemented the shadow depth pass that renders the scene from the light's perspective into a dedicated framebuffer using polygon offset to eliminate surface acne artifacts.</li>
+            <li>Implemented the main shading pass that samples the shadow map via perspective-correct projective texture lookup, with optional shadow-behind-light handling, gamma correction, and exponential distance fog.</li>
+            <li>Added debug visualization tools including a light frustum wireframe reconstructed from clip space and a full-screen depth map overlay driven by the color attachment of the shadow framebuffer.</li>
         </ul>
 
         <h2>Reflection</h2>
-        <p>Reflect on the project, discussing any challenges faced, solutions implemented, and what you learned from the
-            experience.</p>
+        <h3>Challenges</h3>
+        <p>
+            Two distinct challenges required careful attention. The first was correctly constructing the
+            camera's inverse-view matrix without using a general matrix inverse function, which required
+            a clear understanding of how an orthonormal rotation matrix's inverse relates to its transpose.
+            The second was integrating the shadow bias matrix: because the bias encodes both the
+            NDC-to-texture-space remapping and the depth range in a single pre-multiplied matrix,
+            any mistake in the multiplication order made the entire shadow map produce incorrect results
+            with no obvious error message.
+        </p>
+        <h3>Solutions</h3>
+        <p>
+            For the camera inverse, the key insight is that for an orthonormal rotation matrix the inverse
+            equals the transpose, so the world-to-camera and camera-to-world transforms can be derived
+            analytically from the Right, Up, and Back basis vectors and the Eye position alone, with no
+            runtime inversion needed. For the shadow bias, the bias matrix is composed with the light's
+            projection and view matrices once per frame on the CPU, so the vertex shader reduces to a single
+            matrix-vector multiply that produces the full shadow-space coordinate ready for
+            projective texture lookup.
+        </p>
+        <h3>Learnings</h3>
+        <p>
+            Shadow quality is determined by three parameters that are in direct tension: shadow map resolution,
+            polygon offset, and depth buffer bit depth. Higher resolution reduces aliasing but increases
+            memory and per-frame cost; tighter polygon offset eliminates acne but can introduce
+            peter-panning; deeper bit formats reduce z-fighting at range but may be unsupported on
+            certain hardware. Exposing all three as live ImGui controls made the relationship between
+            each parameter and the visual artifact it governs immediately apparent, which would have been
+            very difficult to reason about from the source code alone.
+        </p>
     </div>
 
     <div class="portfolio-item-individual">
