@@ -9,7 +9,7 @@
     <link rel="icon" type="image/svg+xml" href="../img/face.jpg">
     <!-- Help auto scale for desktop & mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STUDENT TODO Website</title>
+    <title>Gradient Noise | Sangyun Lee</title>
 
     <!-- Normalize the difference across browsers  https://necolas.github.io/normalize.css/ -->
     <link rel="stylesheet" href="../external/normalize.css">
@@ -63,22 +63,48 @@
             Project <strong>Gradient Noise</strong>
         </h1>
         <p class="section__subtitle section__subtitle--intro">3D Graphics</p>
-        <img src="../img/portfolio_thumbnails/07_gradient.jpg" alt="a picture of this portfolio item" class="intro__img">
+        <img src="../img/portfolio_thumbnails/07_gradient.png" alt="a picture of this portfolio item" class="intro__img">
     </section>
 
     <div class="portfolio-item-individual">
         <h2>Project Overview</h2>
-        <p>Provide a brief description of the project, its purpose, and what you aimed to achieve.</p>
+        <p>
+            This project implements Improved Perlin Gradient Noise entirely on the GPU using GLSL shaders as part of CS250 Computer Graphics II.
+            Unlike value noise, gradient noise assigns random direction vectors to lattice points and interpolates dot products,
+            producing a smoother, more natural-looking noise field.
+            The noise is computed in a dedicated offscreen render pass and stored in a single-channel floating-point texture,
+            which is then visualized either as a flat 2D texture or as a 3D terrain surface with per-vertex height displacement.
+        </p>
 
         <h2>Tasks Completed</h2>
         <ul>
-            <li>Describe the tasks you completed for this project.</li>
-            <li>Be specific about your contributions and the technologies used.</li>
+            <li><strong>GPU Gradient Noise Algorithm</strong> — Implemented Improved Perlin 3D Gradient Noise in GLSL using a hardcoded period-64 permutation table, twelve fixed gradient direction vectors, and a quintic smoothing curve to guarantee C2 continuity across lattice cell boundaries.</li>
+            <li><strong>Procedural Pattern Generation</strong> — Extended the base noise function to produce five distinct visual patterns — plain gradient noise, fractal sum, turbulence, marble, and wood — each remapped to a display-ready range and designed to tile seamlessly.</li>
+            <li><strong>GPU Texture Format Extension</strong> — Extended the texture loading system to support multiple sized internal formats including single-channel and multi-channel floating-point variants, with automatic fallback between immutable and mutable storage paths depending on the available OpenGL version.</li>
+            <li><strong>Configurable Framebuffer Color Format</strong> — Updated the framebuffer system to accept a caller-specified color attachment format, enabling the noise render pass to write raw floating-point values directly into a single-channel offscreen texture rather than being limited to byte-precision RGBA.</li>
+            <li><strong>Dual Visualization Modes</strong> — Implemented two independent display paths: a 2D textured quad view that tiles and scales the generated noise texture with adjustable zoom, and a 3D surface view that samples the same texture in the vertex shader to displace a plane mesh into terrain, with a free-look spectator camera for interactive exploration.</li>
         </ul>
 
         <h2>Reflection</h2>
-        <p>Reflect on the project, discussing any challenges faced, solutions implemented, and what you learned from the
-            experience.</p>
+        <h3>Challenges</h3>
+        <p>
+            Three separate bugs produced visually broken output before the noise looked correct.
+            First, the gradient direction selector used a bitwise mask that silently excluded four of the twelve gradient directions, producing an anisotropic noise field with visible directional artifacts.
+            Second, the noise frequency was set too low relative to the permutation table's period, so UV boundaries did not align with hash-domain period boundaries and a seam appeared when the texture was tiled.
+            Third, the marble pattern produced vertical stripes instead of the expected horizontal bands because the sine carrier was driven by the wrong UV axis.
+        </p>
+        <h3>Solutions</h3>
+        <p>
+            The gradient selector was corrected to use true modulo division so all twelve directions are reachable with equal probability, restoring isotropy.
+            Seamless tiling was achieved by aligning the noise coordinate range to exactly one full permutation period per UV unit, guaranteeing that the hash function returns identical values at both UV boundaries.
+            The marble direction mismatch was resolved by identifying which UV axis maps to the depth direction in the surface view and switching the carrier accordingly, producing the horizontal banding that matches the expected appearance.
+        </p>
+        <h3>Learnings</h3>
+        <p>
+            Bitwise AND is only a valid substitute for modulo when the divisor is a power of two; applying it to any other value silently restricts the output domain with no compiler or runtime warning, making this category of bug easy to miss.
+            GPU procedural textures tile seamlessly only when the noise coordinate domain and the hash function's period are aligned — matching the visual frequency to the hash period is a deliberate design choice, not an automatic property.
+            When mapping procedural patterns onto a 3D surface, the visual orientation of any direction-dependent feature depends on the full UV-to-world-space transform, so the correct axis must be chosen with the final camera and geometry transform in mind.
+        </p>
     </div>
 
     <div class="portfolio-item-individual">
