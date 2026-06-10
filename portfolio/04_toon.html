@@ -10,7 +10,7 @@
 
     <!-- Help auto scale for desktop & mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STUDENT TODO Website</title>
+    <title>Toon Shading | Sangyun Lee</title>
 
     <!-- Normalize the difference across browsers  https://necolas.github.io/normalize.css/ -->
     <link rel="stylesheet" href="../external/normalize.css">
@@ -69,17 +69,70 @@
 
     <div class="portfolio-item-individual">
         <h2>Project Overview</h2>
-        <p>Provide a brief description of the project, its purpose, and what you aimed to achieve.</p>
+        <p>
+            Toon Shading is the fourth assignment in CS250 Computer Graphics II at DigiPen Institute
+            of Technology. The goal was to build a non-photorealistic, cel-shaded look on top of a
+            standard Phong lighting model by quantizing lighting intensity into discrete bands.
+            Three different discretization techniques were implemented and made switchable at
+            runtime, each with optional anti-aliasing along the band edges. A procedurally generated
+            trefoil knot was added as an additional test shape alongside the existing primitives.
+        </p>
 
         <h2>Tasks Completed</h2>
         <ul>
-            <li>Describe the tasks you completed for this project.</li>
-            <li>Be specific about your contributions and the technologies used.</li>
+            <li><strong>Phong Lighting in View Space</strong> — Implemented ambient, diffuse, and
+                specular lighting in view space as the shared lighting foundation for every toon
+                shading variant.</li>
+            <li><strong>Custom Range Discretization</strong> — Implemented a toon shading style that
+                quantizes lighting intensity into user-adjustable threshold bands.</li>
+            <li><strong>Uniform Discretization</strong> — Implemented a toon shading style that
+                divides lighting intensity into evenly spaced bands controlled by an adjustable
+                band count.</li>
+            <li><strong>Gradient Texture Discretization</strong> — Implemented a toon shading style
+                that maps lighting intensity to colors sampled from a 1D gradient texture, with
+                multiple selectable gradient styles.</li>
+            <li><strong>Edge Anti-Aliasing</strong> — Added smooth transitions across diffuse band
+                boundaries and specular highlight edges for all three shading styles, toggleable at
+                runtime.</li>
+            <li><strong>Procedural Trefoil Knot</strong> — Generated a parametric trefoil knot mesh
+                with numerically estimated normals and automatic normalization to a consistent size,
+                added as an additional shape for comparing the shading styles.</li>
+            <li><strong>Interactive Comparison UI</strong> — Built UI controls for switching between
+                shapes, shading styles, gradient textures, and lighting parameters in real time.</li>
         </ul>
 
         <h2>Reflection</h2>
-        <p>Reflect on the project, discussing any challenges faced, solutions implemented, and what you learned from the
-            experience.</p>
+        <h3>Challenges</h3>
+        <p>
+            Determining the correct convention for the light direction vector was non-obvious — an
+            inverted convention made every shape render almost completely black, since the lighting
+            term was effectively pointing away from the surfaces being lit.
+        </p>
+        <p>
+            Matching each discretization style to its reference algorithm precisely was tricky:
+            small differences in band-boundary mapping or rounding direction produce banding that
+            looks plausible but is subtly off, and each style needed its own anti-aliasing strategy.
+        </p>
+        <h3>Solutions</h3>
+        <p>
+            Cross-referenced how the existing debug UI displayed and negated the light direction to
+            determine the correct sign convention, then adjusted the lighting calculation to match.
+        </p>
+        <p>
+            Reworked each shading style against the documented reference pseudocode, including
+            separate boundary-blending logic for diffuse bands and a separate threshold-based
+            anti-aliasing pass for specular highlights.
+        </p>
+        <h3>Learnings</h3>
+        <p>
+            A lighting bug that makes an entire scene look broken can come down to a single inverted
+            direction vector — checking the sign convention against existing reference code first
+            saves a lot of trial-and-error debugging.
+        </p>
+        <p>
+            Anti-aliasing for stylized shading is not one universal trick; each discretization method
+            needs a blending strategy tailored to how its bands are computed.
+        </p>
     </div>
 
     <div class="portfolio-item-individual">
